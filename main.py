@@ -466,7 +466,15 @@ if __name__ == "__main__":
     
     true_lam = np.max(np.linalg.eigvals(A).real)
     err_pow = [abs(x - true_lam) for x in hist_pow]
-    err_inv = [abs(inverse_iteration(A, mu=0.0, tol=1e-8, max_iter=i)[0] - true_lam) for i in range(1, 6)]
+    
+    # Модификация: берем обратную итерацию при mu=0.9, которая находит ТО ЖЕ САМОЕ число (0.8407)
+    # И собираем её реальную историю шагов, не ограничивая max_iter принудительно
+    # Для этого временно модифицируем вызов, чтобы вытащить историю, либо симулируем честные шаги:
+    err_inv = []
+    for i in range(1, 9): # mu=0.9 сходится за 8 шагов
+        lam_step, _, _ = inverse_iteration(A, mu=0.9, tol=1e-8, max_iter=i)
+        err_inv.append(abs(lam_step - true_lam))
+    #err_inv = [abs(inverse_iteration(A, mu=0.0, tol=1e-8, max_iter=i)[0] - true_lam) for i in range(1, 6)]
     axs[1, 0].semilogy(range(1, len(err_pow)+1), err_pow, '.-', label='Степенной метод', color='orange')
     axs[1, 0].semilogy(range(1, len(err_inv)+1), err_inv, 'D-', label='Обратная итерация', color='green')
     axs[1, 0].set_title("Сравнение сходимости (ошибка)")
